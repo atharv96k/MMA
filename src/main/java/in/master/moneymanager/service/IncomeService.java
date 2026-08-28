@@ -10,6 +10,8 @@ import in.master.moneymanager.entity.CategoryEntity;
 import in.master.moneymanager.entity.ExpenseEntity;
 import in.master.moneymanager.entity.IncomeEntity;
 import in.master.moneymanager.entity.ProfileEntity;
+import in.master.moneymanager.exception.ResourceNotFoundException;
+import in.master.moneymanager.exception.UnauthorizedActionException;
 import in.master.moneymanager.repository.CategoryRepository;
 import in.master.moneymanager.repository.IncomeRepository;
 
@@ -28,7 +30,7 @@ public class IncomeService {
     public IncomeDTO addIncome(IncomeDTO dto) {
         ProfileEntity profile = profileService.getCurrentProfile();
         CategoryEntity category = categoryRepository.findById(dto.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with ID: " + dto.getCategoryId()));
         IncomeEntity newExpense = toEntity(dto, profile, category);
         newExpense = incomeRepository.save(newExpense);
         return toDTO(newExpense);
@@ -48,9 +50,9 @@ public class IncomeService {
     public void deleteIncome(Long incomeId) {
         ProfileEntity profile = profileService.getCurrentProfile();
         IncomeEntity entity = incomeRepository.findById(incomeId)
-                .orElseThrow(() -> new RuntimeException("Income not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Income not found with ID: " + incomeId));
         if (!entity.getProfile().getId().equals(profile.getId())) {
-            throw new RuntimeException("Unauthorized to delete this income");
+            throw new UnauthorizedActionException("You are not authorized to delete this income");
         }
         incomeRepository.delete(entity);
     }
@@ -58,14 +60,26 @@ public class IncomeService {
     // Get latest 5 incomes for current user
     public List<IncomeDTO> getLatest5IncomesForCurrentUser() {
         ProfileEntity profile = profileService.getCurrentProfile();
-        List<IncomeEntity> list = incomeRepository.findTop5ByProfileIdOrderByDateDesc(profile.getId());
+        return getLatest5IncomesForProfile(profile.getId());
+    }
+
+    // Same as above, but takes an already-resolved profileId to avoid
+    // re-querying the profile when the caller (e.g. DashboardService)
+    // has already resolved it once for this request.
+    public List<IncomeDTO> getLatest5IncomesForProfile(Long profileId) {
+        List<IncomeEntity> list = incomeRepository.findTop5ByProfileIdOrderByDateDesc(profileId);
         return list.stream().map(this::toDTO).toList();
     }
 
     // Get total incomes for current user
     public BigDecimal getTotalIncomeForCurrentUser() {
         ProfileEntity profile = profileService.getCurrentProfile();
-        BigDecimal total = incomeRepository.findTotalExpenseByProfileId(profile.getId());
+        return getTotalIncomeForProfile(profile.getId());
+    }
+
+    // Same as above, but takes an already-resolved profileId
+    public BigDecimal getTotalIncomeForProfile(Long profileId) {
+        BigDecimal total = incomeRepository.findTotalExpenseByProfileId(profileId);
         return total != null ? total: BigDecimal.ZERO;
     }
 

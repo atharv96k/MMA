@@ -8,6 +8,8 @@ import org.springframework.web.server.ResponseStatusException;
 import in.master.moneymanager.dto.CategoryDTO;
 import in.master.moneymanager.entity.CategoryEntity;
 import in.master.moneymanager.entity.ProfileEntity;
+import in.master.moneymanager.exception.DuplicateResourceException;
+import in.master.moneymanager.exception.ResourceNotFoundException;
 import in.master.moneymanager.repository.CategoryRepository;
 
 import java.time.LocalDateTime;
@@ -24,7 +26,7 @@ public class CategoryService {
     public CategoryDTO saveCategory(CategoryDTO categoryDTO) {
         ProfileEntity profile = profileService.getCurrentProfile();
         if (categoryRepository.existsByNameAndProfileId(categoryDTO.getName(), profile.getId())) {
-            throw new RuntimeException("Category with this name already exists");
+            throw new DuplicateResourceException("Category with this name already exists");
         }
 
         CategoryEntity newCategory = toEntity(categoryDTO, profile);
@@ -49,7 +51,7 @@ public class CategoryService {
     public CategoryDTO updateCategory(Long categoryId, CategoryDTO dto) {
         ProfileEntity profile = profileService.getCurrentProfile();
         CategoryEntity existingCategory = categoryRepository.findByIdAndProfileId(categoryId, profile.getId())
-                .orElseThrow(() -> new RuntimeException("Category not found or not accessible"));
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found or not accessible with ID: " + categoryId));
         existingCategory.setName(dto.getName());
         existingCategory.setIcon(dto.getIcon());
         existingCategory = categoryRepository.save(existingCategory);

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import in.master.moneymanager.dto.AuthDTO;
 import in.master.moneymanager.dto.ProfileDTO;
 import in.master.moneymanager.entity.ProfileEntity;
+import in.master.moneymanager.exception.InvalidCredentialsException;
 import in.master.moneymanager.repository.ProfileRepository;
 import in.master.moneymanager.util.JwtUtil;
 
@@ -118,7 +119,7 @@ public class ProfileService {
                     "user", getPublicProfile(authDTO.getEmail())
             );
         } catch (Exception e) {
-            throw new RuntimeException("Invalid email or password");
+            throw new InvalidCredentialsException("Invalid email or password");
         }
     }
 }

@@ -16,6 +16,8 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Stream.concat;
 
+import java.math.BigDecimal;
+
 @Service
 @RequiredArgsConstructor
 public class DashboardService {
@@ -26,13 +28,15 @@ public class DashboardService {
 
     public Map<String, Object> getDashboardData() {
         ProfileEntity profile = profileService.getCurrentProfile();
+        Long profileId = profile.getId();
+
         Map<String, Object> returnValue = new LinkedHashMap<>();
-        List<IncomeDTO> latestIncomes = incomeService.getLatest5IncomesForCurrentUser();
-        List<ExpenseDTO> latestExpenses = expenseService.getLatest5ExpensesForCurrentUser();
+        List<IncomeDTO> latestIncomes = incomeService.getLatest5IncomesForProfile(profileId);
+        List<ExpenseDTO> latestExpenses = expenseService.getLatest5ExpensesForProfile(profileId);
         List<RecentTransactionDTO> recentTransactions = concat(latestIncomes.stream().map(income ->
                         RecentTransactionDTO.builder()
                                 .id(income.getId())
-                                .profileId(profile.getId())
+                                .profileId(profileId)
                                 .icon(income.getIcon())
                                 .name(income.getName())
                                 .amount(income.getAmount())
@@ -44,7 +48,7 @@ public class DashboardService {
                 latestExpenses.stream().map(expense ->
                         RecentTransactionDTO.builder()
                                 .id(expense.getId())
-                                .profileId(profile.getId())
+                                .profileId(profileId)
                                 .icon(expense.getIcon())
                                 .name(expense.getName())
                                 .amount(expense.getAmount())
@@ -60,11 +64,15 @@ public class DashboardService {
                     }
                     return cmp;
                 }).collect(Collectors.toList());
-        returnValue.put("totalBalance",
-                incomeService.getTotalIncomeForCurrentUser()
-                        .subtract(expenseService.getTotalExpenseForCurrentUser()));
-        returnValue.put("totalIncome", incomeService.getTotalIncomeForCurrentUser());
-        returnValue.put("totalExpense", expenseService.getTotalExpenseForCurrentUser());
+
+        // Compute each total exactly once and reuse, instead of querying it
+        // separately for totalBalance and again for totalIncome/totalExpense.
+        BigDecimal totalIncome = incomeService.getTotalIncomeForProfile(profileId);
+        BigDecimal totalExpense = expenseService.getTotalExpenseForProfile(profileId);
+
+        returnValue.put("totalBalance", totalIncome.subtract(totalExpense));
+        returnValue.put("totalIncome", totalIncome);
+        returnValue.put("totalExpense", totalExpense);
         returnValue.put("recent5Expenses", latestExpenses);
         returnValue.put("recent5Incomes", latestIncomes);
         returnValue.put("recentTransactions", recentTransactions);
