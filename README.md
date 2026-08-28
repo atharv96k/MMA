@@ -1,58 +1,100 @@
-# Money Manager API
+<p align="center">
+  <img src="docs/logo.png" alt="Money Manager API" width="120" />
+</p>
 
-A Spring Boot REST API for personal finance tracking — manage income, expenses, and categories, view a spending dashboard, filter transactions, and export reports to Excel. Secured with JWT-based authentication and email account activation.
+<h1 align="center">Money Manager API</h1>
 
-## Features
+<p align="center">
+  A Spring Boot REST API for personal finance tracking — income, expenses, categories, a spending dashboard, filters, and Excel reports, secured with JWT and email activation.
+</p>
 
-- **Authentication** — Register with email activation, JWT-based login, stateless session management
-- **Categories** — Create, list, and update custom income/expense categories per user
-- **Income & Expense tracking** — Add, list, and delete transactions
-- **Dashboard** — Aggregated view of recent activity and totals
-- **Filtering** — Query transactions by type, category, date range, and keyword
-- **Excel export** — Download income and expense records as `.xlsx` reports
-- **Email reports** — Receive income/expense Excel reports directly via email
-- **Scheduled notifications** — Daily reminder/summary jobs run automatically at 10 PM and 11 PM IST
-- **Global exception handling** — Consistent JSON error responses across the API
+<p align="center">
+  <img src="https://img.shields.io/badge/Java-21-orange?logo=openjdk&logoColor=white" alt="Java 21" />
+  <img src="https://img.shields.io/badge/Spring%20Boot-3.5.3-6DB33F?logo=springboot&logoColor=white" alt="Spring Boot 3.5.3" />
+  <img src="https://img.shields.io/badge/MySQL-compatible-4479A1?logo=mysql&logoColor=white" alt="MySQL" />
+  <img src="https://img.shields.io/badge/build-Maven-C71A36?logo=apachemaven&logoColor=white" alt="Maven" />
+  <img src="https://img.shields.io/badge/license-MIT-blue" alt="License" />
+</p>
 
-## Tech Stack
+---
+
+**Get started** (2 minutes):
+
+​```bash
+git clone https://github.com/<your-username>/<repo-name>.git
+cd <repo-name>
+cp .env.example .env        # fill in DB, mail, and JWT values — see below
+mvn clean package -DskipTests
+java -jar target/moneymanager-0.0.1-SNAPSHOT.jar
+​```
+
+The API is live at `http://localhost:8080/api/v1.0`.
+
+---
+
+## What it does
+
+| Capability | Details |
+|---|---|
+| **Authentication** | Register with email activation, JWT login, fully stateless sessions |
+| **Categories** | Create, list, and update custom income/expense categories per user |
+| **Income & Expenses** | Add, list, and delete transactions |
+| **Dashboard** | Aggregated recent activity and totals |
+| **Filtering** | Query transactions by type, category, date range, and keyword |
+| **Excel export** | Download income/expense records as `.xlsx` |
+| **Email reports** | Send income/expense Excel reports straight to your inbox |
+| **Scheduled notifications** | Daily jobs run automatically at 10 PM and 11 PM IST |
+| **Global exception handling** | Consistent JSON error responses across every endpoint |
+
+---
+
+## Tech stack
 
 | Layer | Technology |
 |---|---|
 | Language | Java 21 |
 | Framework | Spring Boot 3.5.3 |
-| Security | Spring Security, JWT (jjwt) |
+| Security | Spring Security, JWT (`jjwt`) |
 | Persistence | Spring Data JPA, Hibernate |
-| Database | MySQL (PostgreSQL driver also available) |
+| Database | MySQL (PostgreSQL driver also on the classpath) |
 | Email | Spring Mail (SMTP) |
-| Reports | Apache POI (Excel `.xlsx` generation) |
+| Reports | Apache POI (`.xlsx` generation) |
 | Build | Maven |
 | Boilerplate reduction | Lombok |
 
-## Project Structure
+---
 
-```
+## Project structure
+
+​```
 src/main/java/in/master/moneymanager/
-├── config/          # Security configuration (JWT filter chain, CORS, password encoding)
-├── controller/       # REST endpoints
-├── dto/              # Request/response data transfer objects
-├── entity/           # JPA entities (Category, Expense, Income, Profile)
-├── exception/        # Custom exceptions + global exception handler
-├── repository/       # Spring Data JPA repositories
-├── security/         # JWT request filter
-├── service/          # Business logic
-└── util/             # JWT utility (token generation/validation)
-```
+├── config/       Security configuration (JWT filter chain, CORS, password encoding)
+├── controller/   REST endpoints
+├── dto/          Request/response data transfer objects
+├── entity/       JPA entities — Category, Expense, Income, Profile
+├── exception/    Custom exceptions + global exception handler
+├── repository/   Spring Data JPA repositories
+├── security/     JWT request filter
+├── service/      Business logic
+└── util/         JWT utility (token generation/validation)
+​```
+
+---
 
 ## Prerequisites
 
-- Java 21 (JDK)
-- Maven (or use the included wrapper, if present)
-- A MySQL database (a free instance from [Aiven](https://aiven.io) works well)
-- An SMTP-capable email account for sending activation and report emails (e.g. Gmail with an app password)
+| Requirement | Notes |
+|---|---|
+| Java 21 (JDK) | `java -version` to check |
+| Maven | Or use the included wrapper, if present |
+| MySQL database | A free instance from [Aiven](https://aiven.io) works well |
+| SMTP account | For activation + report emails (e.g. Gmail with an app password) |
 
-## Environment Variables
+---
 
-The application is fully configured via environment variables — no values are hardcoded. Create a `.env` file in the project root for local development (supported via `spring-dotenv`), or set these directly on your hosting platform.
+## Environment variables
+
+Everything is configured via environment variables — nothing is hardcoded. Create a `.env` in the project root for local dev (loaded automatically via `spring-dotenv`), or set these on your hosting platform directly.
 
 | Variable | Description | Example |
 |---|---|---|
@@ -67,72 +109,94 @@ The application is fully configured via environment variables — no values are 
 | `JWT_SECRET` | Secret key used to sign JWTs | a long random string |
 | `FRONTEND_URL` | Deployed frontend origin, used for CORS | `https://yourapp.vercel.app` |
 | `ACTIVATION_URL` | Base URL the activation email links to | `https://yourapp.com/activate` |
-| `PORT` | Server port (optional — most hosts set this automatically) | `8080` |
+| `PORT` | Server port | most hosts set this automatically |
+| `SPRING_PROFILES_ACTIVE` | Set to `prod` on deployment to quiet debug logging | `prod` |
 
-> **Note on JDBC SSL parameter:** use `sslMode` (camelCase), not `ssl-mode` — that's the parameter name MySQL Connector/J actually recognizes.
+> **JDBC SSL parameter:** use `sslMode` (camelCase) — that's what MySQL Connector/J actually reads. `ssl-mode` (Aiven's own display convention) is silently ignored by the Java driver.
 
-## Running Locally
+---
 
-1. Clone the repository and navigate into the project folder.
-2. Create a `.env` file in the project root with the variables listed above.
-3. Build and run:
-   ```bash
-   mvn clean package -DskipTests
-   java -jar target/moneymanager-0.0.1-SNAPSHOT.jar
-   ```
-   Or run directly with Maven:
-   ```bash
-   mvn spring-boot:run
-   ```
-4. The API will be available at `http://localhost:8080/api/v1.0`.
+## Running locally
 
-### Note for IPv6-only networks
+​```bash
+mvn clean package -DskipTests
+java -jar target/moneymanager-0.0.1-SNAPSHOT.jar
+​```
 
-If you're on a network that uses NAT64/DNS64 (common on some ISPs and campus Wi-Fi), Java may fail to resolve cloud database hostnames with an `UnknownHostException`, even though `ping` succeeds. If you hit this, add the following JVM argument:
-```
+Or skip the jar and run directly:
+
+​```bash
+mvn spring-boot:run
+​```
+
+<details>
+<summary><strong>On an IPv6-only / NAT64 network?</strong></summary>
+
+<br>
+
+Some ISPs and campus Wi-Fi networks are IPv6-only and translate IPv4 hosts via NAT64. `ping` and Windows tools succeed transparently, but Java's resolver can throw `UnknownHostException` on the same hostname. Fix it with:
+
+​```
 -Djava.net.preferIPv6Addresses=true
-```
+​```
 
-## API Overview
+Add it as a JVM argument (IDE run config → VM arguments, or prefix your `java -jar` command).
 
-All endpoints are prefixed with `/api/v1.0`. Endpoints other than `/status`, `/health`, `/register`, `/activate`, and `/login` require a valid JWT in the `Authorization` header.
+</details>
 
-| Method | Endpoint | Description | Auth required |
-|---|---|---|---|
-| GET | `/status`, `/health` | Health check | No |
-| POST | `/register` | Register a new user | No |
-| GET | `/activate` | Activate account via emailed link | No |
-| POST | `/login` | Authenticate and receive a JWT | No |
-| GET | `/profile` | Get current user's profile | Yes |
-| POST | `/categories` | Create a category | Yes |
-| GET | `/categories` | List categories | Yes |
-| GET | `/categories/{type}` | List categories by type | Yes |
-| PUT | `/categories/{categoryId}` | Update a category | Yes |
-| POST | `/incomes` | Add an income entry | Yes |
-| GET | `/incomes` | List income entries | Yes |
-| DELETE | `/incomes/{id}` | Delete an income entry | Yes |
-| POST | `/expenses` | Add an expense entry | Yes |
-| GET | `/expenses` | List expense entries | Yes |
-| DELETE | `/expenses/{id}` | Delete an expense entry | Yes |
-| GET | `/dashboard` | Get dashboard summary | Yes |
-| POST | `/filter` | Filter transactions | Yes |
-| GET | `/excel/download/income` | Download income report as Excel | Yes |
-| GET | `/excel/download/expense` | Download expense report as Excel | Yes |
-| GET | `/email/income-excel` | Email income report as Excel | Yes |
-| GET | `/email/expense-excel` | Email expense report as Excel | Yes |
+---
+
+## API reference
+
+All endpoints are prefixed with `/api/v1.0`. Everything except the five public routes below requires a valid JWT in the `Authorization` header.
+
+| Method | Endpoint | Description | Auth |
+|---|---|---|:---:|
+| GET | `/status`, `/health` | Health check | — |
+| POST | `/register` | Register a new user | — |
+| GET | `/activate` | Activate account via emailed link | — |
+| POST | `/login` | Authenticate, receive a JWT | — |
+| GET | `/profile` | Current user's profile | ✅ |
+| POST | `/categories` | Create a category | ✅ |
+| GET | `/categories` | List categories | ✅ |
+| GET | `/categories/{type}` | List categories by type | ✅ |
+| PUT | `/categories/{categoryId}` | Update a category | ✅ |
+| POST | `/incomes` | Add an income entry | ✅ |
+| GET | `/incomes` | List income entries | ✅ |
+| DELETE | `/incomes/{id}` | Delete an income entry | ✅ |
+| POST | `/expenses` | Add an expense entry | ✅ |
+| GET | `/expenses` | List expense entries | ✅ |
+| DELETE | `/expenses/{id}` | Delete an expense entry | ✅ |
+| GET | `/dashboard` | Dashboard summary | ✅ |
+| POST | `/filter` | Filter transactions | ✅ |
+| GET | `/excel/download/income` | Download income report (.xlsx) | ✅ |
+| GET | `/excel/download/expense` | Download expense report (.xlsx) | ✅ |
+| GET | `/email/income-excel` | Email income report | ✅ |
+| GET | `/email/expense-excel` | Email expense report | ✅ |
+
+---
 
 ## Deployment
 
-This project includes a multi-stage `Dockerfile` that builds the application from source — no local Docker installation or pre-built jar is required. Push to a Git repository and deploy on any platform that supports Docker-based builds (e.g. Render, Koyeb).
+This repo ships a multi-stage `Dockerfile` that builds from source — no local Docker install and no pre-built jar required. Push to Git and deploy on any Docker-capable platform (Render, Koyeb, etc.).
 
-Set `SPRING_PROFILES_ACTIVE=prod` in your deployment environment to reduce verbose SQL/Hibernate logging that's useful for local development but noisy in production.
+​```bash
+# What the platform runs on your behalf:
+docker build -t moneymanager .
+docker run -p 8080:8080 --env-file .env moneymanager
+​```
 
-Minimum required environment variables for deployment: all variables listed above except `PORT`, which most platforms set automatically.
+Set `SPRING_PROFILES_ACTIVE=prod` in your deployment environment to quiet the verbose SQL/Hibernate logging that's useful locally but noisy in production. All environment variables above except `PORT` are required for a working deployment.
 
-## Security Notes
+---
+
+## Security notes
 
 - Passwords are hashed with BCrypt.
-- Authentication is stateless — JWTs are validated on every request via a custom filter.
-- `spring.jpa.hibernate.ddl-auto=update` is convenient for development but not recommended for production once real data exists; consider migrating to Flyway or Liquibase for controlled schema changes.
-- Never commit `.env` or real credentials — the `.gitignore` already excludes `.env`; double-check this before your first push, especially if you've copied this project from elsewhere.
-```es.
+- Authentication is stateless — JWTs are validated per-request via a custom filter.
+- `spring.jpa.hibernate.ddl-auto=update` is convenient in development; once real data exists, consider Flyway or Liquibase for controlled schema migrations instead.
+- Never commit `.env` or real credentials — confirm `.gitignore` excludes it before your first push.
+
+---
+
+<p align="center">Built with Spring Boot · MIT Licensed</p>

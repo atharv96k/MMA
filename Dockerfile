@@ -1,28 +1,23 @@
-# ── Base image — Java 21 JRE (lighter than JDK)
-# FROM eclipse-temurin:21-jre
+# ── STAGE 1: Build the jar from source using Maven ──
+FROM maven:3.9.9-eclipse-temurin-21 AS build
+WORKDIR /build
 
-# ── Set working directory inside container
-# WORKDIR /app
+# Copy only the pom first so dependency downloads are cached
+# across builds when only source code changes
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
 
-# ── Copy the built jar (rename for clean versioning)
-# COPY target/moneymanager-0.0.1-SNAPSHOT.jar moneymanager-v1.0.jar
+# Now copy the source and build
+COPY src ./src
+RUN mvn clean package -DskipTests -B
 
-# ── Document the port Spring Boot listens on
-# EXPOSE 9090
-
-# ── Start the application
-#ENTRYPOINT ["java", "-jar", "moneymanager-v1.0.jar"]
- 
-#________________________________________________________________________________#
-# Module 6 - Optimize Image
-
-# ── STAGE 1: Extract layers from the fat jar
+# ── STAGE 2: Extract layers from the fat jar ──
 FROM eclipse-temurin:21-jre-alpine AS builder
 WORKDIR /builder
-COPY target/moneymanager-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=build /build/target/moneymanager-0.0.1-SNAPSHOT.jar app.jar
 RUN java -Djarmode=layertools -jar app.jar extract
 
-# ── STAGE 2: Build the final lean image
+# ── STAGE 3: Build the final lean runtime image ──
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
@@ -32,5 +27,5 @@ COPY --from=builder /builder/spring-boot-loader/ ./
 COPY --from=builder /builder/snapshot-dependencies/ ./
 COPY --from=builder /builder/application/ ./
 
-EXPOSE 9090
+EXPOSE 8080
 ENTRYPOINT ["java", "org.springframework.boot.loader.launch.JarLauncher"]
