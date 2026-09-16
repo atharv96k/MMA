@@ -1,6 +1,3 @@
-<p align="center">
-  <img src="docs/logo.png" alt="Money Manager API" width="120" />
-</p>
 
 <h1 align="center">Money Manager API</h1>
 
