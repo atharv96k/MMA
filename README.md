@@ -1,6 +1,6 @@
-
-<h1 align="center">Money Manager API</h1>
-
+<div align="center" >
+      <img src="img/MMA_LOGO.png" alt="Money Manager API" width="720" />
+</div>
 <p align="center">
   A Spring Boot REST API for personal finance tracking — income, expenses, categories, a spending dashboard, filters, and Excel reports, secured with JWT and email activation.
 </p>
