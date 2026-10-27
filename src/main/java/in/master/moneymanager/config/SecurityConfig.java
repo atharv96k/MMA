@@ -50,10 +50,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of(
-                "https://mma-fe.onrender.com",
-            "http://localhost:5173"
-        ));
+        configuration.setAllowedOrigins(List.of(frontendUrl));
 
         configuration.setAllowedMethods(List.of(
                 "GET",
